@@ -1,0 +1,356 @@
+/* 
+#8D8741
+#659DBD
+#DAAD86
+#BC986A
+#FBEEC1
+*/
+body {
+    margin: 0;
+    padding: 0;
+    min-width:  max(100vw, 800px);
+    min-height: max(100vh, 800px);
+}
+
+#header {
+    background-color: #659DBD;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+#main {
+    min-width: 800px;
+    min-height: 800px;
+    height: 100%;
+    width: 100%;
+}
+
+
+
+#todos-list {
+    display: flex;
+    flex-direction: column;
+    row-gap: 20px;
+    height: 100%;
+    width: auto;
+    padding: 10% 20%;
+}
+
+.todo-container {
+    display: grid;
+    font-family: sans-serif;
+    max-width: 600px;
+    grid-template-columns: 40px 1fr 30px;
+    grid-template-rows: 20px 20px;
+    column-gap: 20px;
+    row-gap: 10px;
+    padding: 0px 10px;
+}
+
+.todo-container:last-child {
+    display: block;
+}
+
+
+/*** 
+    CSS for ADD TODO FORM
+***/
+.add-container {
+    border-top: 1px solid #659DBD;
+    padding-top: 10px;
+    cursor: pointer;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    column-gap: 20px;
+    font-size:large;
+}
+
+.add-icon {
+    position: relative;
+    height: 40px;
+    width: 40px;
+    border-radius: 20px;
+    color: #659DBD;
+}
+
+.add-icon div {
+    position: relative;
+    font-size: x-large;
+    bottom: -1px;
+    left: 12px;
+}
+
+.add-text {
+    display: flex;
+    margin-right: 10px;
+    height: 30px;
+    align-items: center;
+    color : grey;
+}
+
+.add-container:hover .add-icon {
+    background-color: #659DBD;
+    color: white;
+}
+
+
+.add-container:hover .add-text {
+    color: #659DBD;
+}
+
+.add-todo-form {
+    margin-top: 10px;
+    padding: 20px;
+    border: 1px solid grey;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    row-gap: 10px;
+}
+
+.add-todo-form-name {
+    border: none;
+    box-sizing: border-box;
+    font-size: large;
+    width: 100%;
+    border-bottom: 1px solid grey;
+    padding-left: 15px;
+}
+
+.des-date-priority {
+    border: 1px solid grey;
+    border-radius: 5px;
+    width: 100%;
+    height: 200px;
+    box-sizing: border-box;
+}
+
+.add-todo-form-des {
+    border: none;
+    border-radius: 5px;
+    font-family: sans-serif;
+    padding: 15px;
+    font-size: small;
+    width: 100%;
+    height: 150px;
+    box-sizing: border-box;
+    overflow: auto;
+    resize: none;
+}
+
+.add-todo-form-des:focus,
+.add-todo-form-name:focus {
+    outline: none;
+}
+
+.date-priority {
+    font-size: x-small;
+    display: flex;
+    flex-wrap: nowrap;
+    padding : 0 20px;
+    justify-content: space-between;
+    align-items: center;
+    font-family: sans-serif;
+}
+
+.date-container input[type=datetime-local] {
+    font-size: x-small;
+}
+
+.add-dueDate-prompt {
+    border: 1px solid grey;
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 5px 10px;
+}
+
+.add-dueDate-prompt:hover {
+    background-color: lightgray;
+}
+
+.clear-date {
+    position: relative;
+    left: 15px;
+    display: inline-block;
+    cursor: pointer;
+    color: grey;
+}
+
+.clear-date:hover {
+    color: #659DBD;
+}
+
+.prioContainer {
+    position: relative;
+    width: 30px;
+    height: 30px;
+}
+
+.priority {
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+}
+
+.priority.no-priority {
+    filter: invert(81%) sepia(0%) saturate(1182%) hue-rotate(276deg) brightness(88%) contrast(83%);
+}
+
+.priority.low-priority {
+    filter: invert(30%) sepia(94%) saturate(1116%) hue-rotate(195deg) brightness(99%) contrast(97%);
+}
+
+.priority.high-priority {
+    filter: invert(34%) sepia(33%) saturate(3764%) hue-rotate(333deg) brightness(101%) contrast(106%);
+}
+
+
+.button-container {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.add-todo-addButton {
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+    padding: 10px;
+    background-color: #659DBD;
+    color: white;
+}
+
+.add-todo-closeButton {
+    cursor: pointer;
+    border-radius: 5px;
+    border: 1px solid grey;
+    padding: 10px;
+    background-color: white;
+}
+
+.add-todo-message {
+    color: red;
+}
+
+/***
+    CSS for TODO ITEM
+***/
+
+.todo-complete {
+    grid-column: 1;
+    grid-row: 1/ span 2; 
+    place-self: center;
+    height: 30px;
+    width: 30px;
+    border-radius: 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.todo-complete div {
+    visibility: hidden;
+    font-size: 30px;
+}
+
+.todo-complete div.completed {
+    visibility: visible;
+}
+
+.todo-complete.no-priority {
+    border: 5px solid grey;
+}
+
+.todo-complete.low-priority {
+    border: 5px solid #006fe3;
+}
+
+.todo-complete.high-priority {
+    border: 5px solid #ff0d3a;
+}
+
+.todo-name {
+    font-size: large;
+    font-weight: 600;
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.strike-through {
+    color: grey;
+    text-decoration: line-through;
+}
+
+.todo-dueIn {
+    font-size: small;
+    font-weight: 300;
+    grid-column: 2;
+    grid-row: 2;  
+}
+
+.todo-remove {
+    cursor: pointer;
+    display: none;
+    width: 30px;
+    height: 30px;
+    object-fit: fill;
+    place-self: center center;
+    grid-column: 3;
+    grid-row: 1 / span 2;
+}
+
+.todo-remove:hover {
+    border-radius: 15px;
+    background-color: #659DBD;
+}
+
+.todo-container:hover .todo-remove {
+    display: inline-block;
+}
+
+.confirmation-container {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.edit-todo-form,
+.confirmation-page {
+    border-radius: 5px;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 50px;
+    row-gap: 20px;
+    justify-content: stretch;
+}
+
+.edit-todo-form-item {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.confirmation-page div {
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    column-gap: 40px;
+}
+
+.confirmation-page h3 span {
+    color: #659DBD;
+}
