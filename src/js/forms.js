@@ -1,6 +1,9 @@
 import flagIcon from '../img/flag-variant.svg';
+import {endOfToday, shortDateTimeLocal} from './dateTime.js';
+import closeIcon from '../img/window-close.svg';
 
 export function getAddTodoFormFor(proj, addTodo, addItem, addContainer) {
+
     let container = document.createElement('div');
     container.classList.add('form-container');
     
@@ -9,14 +12,15 @@ export function getAddTodoFormFor(proj, addTodo, addItem, addContainer) {
     container.appendChild(form);
 
     //              Title
-    let label = document.createElement('div');
-    label.classList.add('add-todo-form-item');
+    let nameContainer = document.createElement('div');
+    form.appendChild(nameContainer);
+    nameContainer.classList.add('add-todo-form-item');
+
     let name = document.createElement('input');
+    nameContainer.appendChild(name);
     name.setAttribute('type', 'text');
-    name.setAttribute('placeholder', 'Title of your task');
+    name.setAttribute('placeholder', 'Title of your task.');
     name.classList.add('add-todo-form-name');
-    label.appendChild(name);
-    form.appendChild(label);
 
 
     //             Extra
@@ -28,7 +32,7 @@ export function getAddTodoFormFor(proj, addTodo, addItem, addContainer) {
     //             Extra Descritption
     let des = document.createElement('textarea');
     des.classList.add('add-todo-form-des');
-    des.setAttribute('placeholder', 'Describe your task.');
+    des.setAttribute('placeholder', 'Details of your task.');
     extra.appendChild(des);
 
     //             Extra Due Date
@@ -51,10 +55,12 @@ export function getAddTodoFormFor(proj, addTodo, addItem, addContainer) {
 
     let date = document.createElement('input');
     date.setAttribute('type', 'datetime-local');
+    date.setAttribute('min', '2020-01-01T00:00');
 
     addDate.addEventListener('click', () => {
         dateContainer.appendChild(date);
         dateContainer.appendChild(closeDate);
+        date.value = endOfToday();
         if (dateContainer.contains(addDate)) dateContainer.removeChild(addDate);
         date.focus();
     });
@@ -157,9 +163,298 @@ export function getAddTodoFormFor(proj, addTodo, addItem, addContainer) {
         addItem.appendChild(addContainer);
     })
 
-    label = document.createElement('div');
-    label.classList.add('add-todo-message');
-    form.appendChild(label);
+    let message = document.createElement('div');
+    form.appendChild(message);
+    message.classList.add('add-todo-message');
 
     return container;
+}
+
+
+export function getTodoDetail(todo, todoDiv, app) {
+    let background = document.createElement('div');
+    document.body.classList.add('no-scroll');
+    background.classList.add('popup-background');
+
+    let detail = document.createElement('div');
+    background.appendChild(detail);
+    detail.classList.add('todo-detail');
+
+
+    //            Title
+    let titleContainer = document.createElement('div');
+    detail.appendChild(titleContainer);
+    titleContainer.classList.add('todo-detail-title-container');
+
+    let title = document.createElement('div');
+    titleContainer.append(title);
+    title.classList.add('todo-detail-title');
+    title.textContent = todo.name;
+
+    //            Extra
+    let desDatePrio = document.createElement('div');
+    detail.append(desDatePrio);
+    desDatePrio.classList.add('des-date-priority');
+    desDatePrio.classList.add('detail-page');
+
+    //            Extra Description
+    let description = document.createElement('div');
+    desDatePrio.appendChild(description);
+    description.classList.add('todo-detail-description');
+    description.textContent = todo.description;
+
+    //            Extra Due Date
+    let datePrio = document.createElement('div');
+    desDatePrio.appendChild(datePrio);
+    datePrio.classList.add('date-priority');
+
+    let dateContainer = document.createElement('div');
+    datePrio.appendChild(dateContainer);
+    dateContainer.classList.add('date-container');
+
+    let dueDate = document.createElement('div');
+    dateContainer.appendChild(dueDate);
+    dueDate.classList.add('todo-detail-dueDate-prompt');
+    dueDate.textContent = shortDateTimeLocal(todo.dueDate);
+
+    //           Extra Priority
+    let prioContainer = document.createElement('div');
+    datePrio.appendChild(prioContainer);
+    prioContainer.classList.add('prioContainer');
+
+    let priority = new Image();
+    prioContainer.appendChild(priority);
+    priority.src = flagIcon;
+    priority.classList.add('priority');
+    switch(todo.priority) {
+        case 'no':
+            priority.classList.add('no-priority');
+            break;
+        case 'low':
+            priority.classList.add('low-priority');
+            break;
+        case 'high':
+            priority.classList.add('high-priority');
+            break;
+    }
+
+
+    //           Control Buttons
+    let buttons = document.createElement('div');
+    detail.appendChild(buttons);
+    buttons.classList.add('todo-detail-buttons-container');
+
+    let editButton = document.createElement('input');
+    buttons.appendChild(editButton);
+    editButton.setAttribute('type', 'button');
+    editButton.setAttribute('value', 'Edit');
+    editButton.classList.add('todo-detail-edit-button');
+
+    editButton.addEventListener('click', () => {
+        editButtonClicked(detail, todo, todoDiv, app);
+    });
+
+
+    //           Close Button
+    let closeContainer = document.createElement('div');
+    detail.appendChild(closeContainer);
+    closeContainer.classList.add('todo-detail-close');
+    let closeButton = new Image();
+    closeButton.src = closeIcon;
+    closeContainer.appendChild(closeButton);
+    closeButton.addEventListener('click', () => {
+        document.body.removeChild(background);
+        document.body.classList.remove('no-scroll');
+    });
+    background.addEventListener('click', (e) => {
+        if (e.target == background) {
+            document.body.removeChild(background);
+            document.body.classList.remove('no-scroll');            
+        }
+    })
+    return background;
+}
+
+
+function editButtonClicked(detail, todo, todoDiv, app) {
+    
+    // get existing elements
+    let bg = detail.parentNode;
+    let nbg = bg.cloneNode();
+    nbg.addEventListener('click', (e) => {
+        if (e.target == nbg) {
+            discardChangeDialog();
+        }
+    });
+
+    let closeButton = detail.querySelector('.todo-detail-close img');
+    let nCloseButton = closeButton.cloneNode();
+    nCloseButton.addEventListener('click', ()=>{
+        discardChangeDialog();
+    });
+
+    let titleContainer = detail.querySelector('.todo-detail-title-container');
+    let title = detail.querySelector('.todo-detail-title');
+
+    let desContainer = detail.querySelector('.des-date-priority');
+    desContainer.classList.add('in-edit');
+    let des = detail.querySelector('.todo-detail-description');
+
+    let dateContainer = detail.querySelector('.date-container');
+    let date = detail.querySelector('.todo-detail-dueDate-prompt');
+
+    let prioContainer = detail.querySelector('.prioContainer');
+    let priority = detail.querySelector('.priority');
+
+    let buttonContainer = detail.querySelector('.todo-detail-buttons-container');
+    let editButton = buttonContainer.querySelector('.todo-detail-edit-button');
+
+    // input
+    let titleInput = document.createElement('input');
+    titleInput.setAttribute('type', 'text');
+    titleInput.setAttribute('placeholder', 'Title of your task.');
+    titleInput.value = todo.name;
+    titleInput.classList.add('todo-detail-title');
+    titleInput.classList.add('in-edit');
+
+    let desInput = document.createElement('textarea');
+    desInput.setAttribute('placeholder', 'Details of your task.');
+    desInput.value = todo.description;
+    desInput.classList.add('todo-detail-description');
+
+    let dateInput = document.createElement('input');
+    dateInput.setAttribute('type', 'datetime-local');
+    dateInput.value = todo.dueDate;
+
+    let priorityInput = new Image();
+    priorityInput.src = flagIcon;
+    priorityInput.classList.add('priority');
+    priorityInput.classList.add(todo.priority + '-' + 'priority');
+    priorityInput.addEventListener('click', () => {
+        switch (priorityInput.className) {
+            case ('priority no-priority'):
+                priorityInput.className = 'priority low-priority';
+                break;
+            case ('priority low-priority'):
+                priorityInput.className = 'priority high-priority';
+                break;
+            case ('priority high-priority'):
+                priorityInput.className = 'priority no-priority';
+                break;
+        }
+    });
+
+    let confirmEditButton = document.createElement('input');
+    confirmEditButton.setAttribute('type', 'button');
+    confirmEditButton.setAttribute('value', 'Confirm Edits');
+    confirmEditButton.addEventListener('click', () => {
+        let options = {};
+        options.name = titleInput.value;
+        options.description = desInput.value;
+        options.dueDate = dateInput.value;
+        switch(priorityInput.className) {
+            case ('priority no-priority'):
+                options.priority = 'no';
+                break;
+            case ('priority low-priority'):
+                options.priority = 'low';
+                break;
+            case ('priority high-priority'):
+                options.priority = 'high';
+                break;            
+        };
+        options.project = todo.project;
+        let [ans, m] = app.editTodo(options, todo.id);
+        if (ans) {
+            document.body.removeChild(detail.parentNode);
+            app.updateTodoDiv(todo.id, todoDiv);
+            return;
+        }
+        messageContainer.textContent = m;
+    })
+
+    let messageContainer = document.createElement('div');
+    messageContainer.classList.add('todo-detail-edit-message');
+
+    let cancelButton = document.createElement('input');
+    cancelButton.setAttribute('type', 'button');
+    cancelButton.setAttribute('value', 'Discard Edits');
+    cancelButton.addEventListener('click', ()=> {
+        revert();
+    });
+
+    // replacement
+    titleContainer.replaceChild(titleInput, title);
+    desContainer.replaceChild(desInput, des);
+    dateContainer.replaceChild(dateInput, date);
+    prioContainer.replaceChild(priorityInput, priority);
+    buttonContainer.replaceChild(cancelButton, editButton);
+    buttonContainer.insertBefore(confirmEditButton, cancelButton);
+    bg.parentNode.replaceChild(nbg, bg);
+    nbg.appendChild(detail);
+    closeButton.parentNode.replaceChild(nCloseButton, closeButton);
+    detail.appendChild(messageContainer);
+    titleInput.focus();
+
+
+    function revert() {
+        titleContainer.insertBefore(title, titleInput);
+        titleContainer.removeChild(titleInput);
+        desContainer.classList.remove('in-edit');
+        desContainer.insertBefore(des, desInput);
+        desContainer.removeChild(desInput);
+        dateContainer.insertBefore(date, dateInput);
+        dateContainer.removeChild(dateInput);
+        prioContainer.insertBefore(priority, priorityInput);
+        prioContainer.removeChild(priorityInput);
+        buttonContainer.insertBefore(editButton, cancelButton);
+        buttonContainer.removeChild(cancelButton);
+        buttonContainer.removeChild(confirmEditButton);
+        nCloseButton.parentNode.replaceChild(closeButton, nCloseButton);
+        nbg.parentNode.replaceChild(bg, nbg);  
+        bg.appendChild(detail);
+        detail.removeChild(messageContainer);
+    }
+
+    function discardChangeDialog() {
+
+        let dialBackground = document.createElement('div');
+        document.body.appendChild(dialBackground);
+        dialBackground.classList.add('popup-background');
+        dialBackground.classList.add('higherZ');
+        dialBackground.addEventListener('click', (e)=> {
+            if (e.target == dialBackground) {
+                document.body.removeChild(dialBackground); 
+            }
+        })
+
+
+        let confirmationPage = document.createElement('div');
+        dialBackground.appendChild(confirmationPage);
+        confirmationPage.classList.add('confirmation-page');
+    
+        let head = document.createElement('h3');
+        confirmationPage.appendChild(head);
+        head.innerHTML = `Discard Change?`;
+    
+        let buttonBox = document.createElement('div');
+        confirmationPage.appendChild(buttonBox);
+
+        let cancel = document.createElement('input');
+        buttonBox.appendChild(cancel);
+        cancel.setAttribute('type', 'button');
+        cancel.setAttribute('value', 'cancel');
+        cancel.addEventListener('click', () => {
+            document.body.removeChild(dialBackground);
+        });
+        
+        let discard = document.createElement('input');
+        buttonBox.appendChild(discard);
+        discard.setAttribute('type', 'button');
+        discard.setAttribute('value', 'Discard');
+        discard.addEventListener('click', ()=> {
+            document.body.removeChild(dialBackground);
+            revert();
+        });
+    }
 }

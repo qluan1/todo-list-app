@@ -1,7 +1,8 @@
 import '../style.css';
 import Model from './model';
 import initializePage from './initializePage';
-import {showProjects, showTodosFor, appendTodoElement} from './showContent';
+import {showProjects, showTodosFor, appendTodoElement, replaceTodoDiv} from './showContent';
+import {storageAvailable, modifyEntry, removeEntry, loadEntries} from './localStorage.js';
 
 initializePage();
 const model = Model();
@@ -13,63 +14,89 @@ let app = (function (){
     };
 
     const addTodo = (options) => {
-        let [ans, message] = model.addTodo(options);
-        if (ans) {
-            appendTodoElement(model.outputTodoInfoById(message), editTodo, removeTodo, getTodoById, toggleCompleteTodo);
+        // if the addTodo succesfully add an todo entry
+        // message will be the id of the todo entry
+        let [success, message] = model.addTodo(options);
+        if (success) {
+            appendTodoElement(model.outputTodoInfoById(message), app);
+            let [spec, str] = model.outputTodoSepcStrById(message);
+            modifyEntry(model.getCurId(), message, spec, str);
         }
-        return [ans, message];
+        return [success, message];
     };
 
     const removeTodo = (todoId) => {
-        return model.removeTodoById(todoId);
+        let success = model.removeTodoById(todoId);
+        removeEntry(model.getCurId(), todoId);
+        return success;
     };
 
     const editTodo = (options, todoId) => {
-        return model.editTodoById(options, todoId);
+        let [success, message] = model.editTodoById(options, todoId);
+        if (success) {
+            let [spec, str] = model.outputTodoSepcStrById(todoId);
+            modifyEntry(model.getCurId(), todoId, spec, str);
+        }
+        return [success, message];
     };
 
     const toggleCompleteTodo = (todoId) => {
-        return model.toggleCompleteTodoById(todoId);
+        model.toggleCompleteTodoById(todoId);
+        let [spec, str] = model.outputTodoSepcStrById(todoId);
+        modifyEntry(model.getCurId(), todoId, spec, str);        
     }
 
-    const clickProject = (projName) => {
-        showTodosFor(model.outputTodoInfosFor(projName), projName, addTodo, editTodo, removeTodo, getTodoById, toggleCompleteTodo);
+    const updateTodoDiv = (todoId, div) => {
+        replaceTodoDiv(getTodoById(todoId), div, app);
+    }
+    const showTodosForProject = (projName) => {
+        showTodosFor(model.outputTodoInfosFor(projName), projName, app);
+    };
+
+    const getStoredEntries = () => {
+        model.initializeModel(...loadEntries());
     };
 
     return {
-        clickProject,
-        test : () => {
-            addTodo({
-                name: 'Sample todo task 1',
-                description: 'Description of sample todo task 1',
-                dueDate: '2022-04-10T21:30',
-                priority: 'high',
-                project: null,
-            }, null);
-            addTodo({
-                name: 'Sample todo task 2',
-                description: 'Description of another sample todo task 1',
-                dueDate: '2022-04-11T07:30',
-                priority: 'low',
-                project: null,
-            }, null);  
-            addTodo({
-                name: 'Sample todo task 3',
-                description: 'Description of another sample todo task 1',
-                dueDate: '2022-04-22T12:30',
-                priority: 'low',
-                project: null,
-            }, null);
-            addTodo({
-                name: 'Sample todo task 4',
-                description: 'Description of another sample todo task 1',
-                dueDate: '2022-04-10T22:30',
-                priority: 'no',
-                project: null,
-            }, null);             
-            clickProject(null);
+        getTodoById,
+        addTodo,
+        removeTodo,
+        editTodo,
+        toggleCompleteTodo,
+        showTodosForProject,
+        updateTodoDiv,
+        getStoredEntries,
+        test : () => {   
+            if (storageAvailable('localStorage')) {
+                getStoredEntries();
+                showTodosForProject('');
+            } else {
+                showTodosForProject('');
+            }
+            let log = document.createElement('input');
+            log.setAttribute('type', 'button');
+            log.setAttribute('value', 'log');
+            log.addEventListener('click', ()=> {
+                let [curId, indices, specs, strs] = loadEntries();
+                console.log(curId);
+                console.log(indices);
+                console.log(specs);
+                console.log(strs);
+            })
+            document.body.appendChild(log);
+
+            let clear = document.createElement('input');
+            clear.setAttribute('type', 'button');
+            clear.setAttribute('value', 'clear');
+            clear.addEventListener('click', ()=>{
+                window.localStorage.clear();
+                getStoredEntries();
+                showTodosForProject('');
+            });
+            document.body.appendChild(clear);
         },
     };
 })();
 
 app.test();
+

@@ -12,6 +12,10 @@ body {
     min-height: max(100vh, 800px);
 }
 
+body.no-scroll {
+    overflow: hidden;
+}
+
 #header {
     background-color: #659DBD;
     color: white;
@@ -19,6 +23,10 @@ body {
     justify-content: center;
     align-items: center;
     width: 100%;
+}
+
+#header:hover {
+    color: #DAAD86;
 }
 
 #main {
@@ -36,10 +44,11 @@ body {
     row-gap: 20px;
     height: 100%;
     width: auto;
-    padding: 10% 20%;
+    padding: 40px 20%;
 }
 
 .todo-container {
+    cursor:pointer;
     display: grid;
     font-family: sans-serif;
     max-width: 600px;
@@ -47,11 +56,14 @@ body {
     grid-template-rows: 20px 20px;
     column-gap: 20px;
     row-gap: 10px;
-    padding: 0px 10px;
+    padding: 0px 10px 10px 10px;
+    border-bottom: 1px solid #f0f0f0;
 }
+
 
 .todo-container:last-child {
     display: block;
+    border-bottom: none;
 }
 
 
@@ -59,7 +71,6 @@ body {
     CSS for ADD TODO FORM
 ***/
 .add-container {
-    border-top: 1px solid #659DBD;
     padding-top: 10px;
     cursor: pointer;
     display: flex;
@@ -126,14 +137,16 @@ body {
     border: 1px solid grey;
     border-radius: 5px;
     width: 100%;
-    height: 200px;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+    padding-bottom: 10px;
 }
 
 .add-todo-form-des {
     border: none;
     border-radius: 5px;
-    font-family: sans-serif;
     padding: 15px;
     font-size: small;
     width: 100%;
@@ -276,7 +289,10 @@ body {
 }
 
 .todo-name {
-    font-size: large;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: small;
     font-weight: 600;
     grid-column: 2;
     grid-row: 1;
@@ -288,7 +304,7 @@ body {
 }
 
 .todo-dueIn {
-    font-size: small;
+    font-size: x-small;
     font-weight: 300;
     grid-column: 2;
     grid-row: 2;  
@@ -314,17 +330,107 @@ body {
     display: inline-block;
 }
 
-.confirmation-container {
+/*** 
+            CSS for Popup Detail Page
+***/
+
+.todo-detail {
+    border-radius: 10px;
+    position: relative;
+    background-color: white;
+    width: 50%;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    row-gap: 10px;
+}
+
+.todo-detail-close {
+    cursor:pointer;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    height: 24px;
+}
+
+.todo-detail-close:hover {
+    background-color: lightgrey;
+}
+
+.todo-detail-title {
+    font-family: sans-serif;
+    border: none;
+    box-sizing: border-box;
+    font-size: large;
+    width: 100%;
+    max-height: 100px;
+    overflow: auto;
+    padding-left: 15px;
+    border-bottom: 1px solid #659DBD;
+}
+
+.todo-detail-title.in-edit {
+    border-bottom: 1px solid grey;
+}
+
+.des-date-priority.detail-page {
+    border: 1px solid #659DBD;
+}
+
+.des-date-priority.detail-page.in-edit {
+    border: 1px solid grey;
+}
+
+.todo-detail-description {
+    font-family: sans-serif;
+    border: none;
+    border-radius: 5px;
+    padding: 15px;
+    font-size: small;
+    width: 100%;
+    min-height: 150px;
+    max-height: 400px;
+    box-sizing: border-box;
+    overflow: auto;
+    resize: none;
+}
+
+.todo-detail-dueDate-prompt {
+    border-radius: 10px;
+    padding: 5px 10px;
+    border: none;
+}
+
+.todo-detail-dueDate-prompt::before {
+    content: 'Due:';
+    padding-right: 10px;
+}
+
+/***
+textarea.todo-detail-description:focus,
+input.todo-detail-title:focus {
+    outline: none;
+}
+***/
+
+.popup-background {
     position: fixed;
     top: 0px;
     left: 0px;
-    width: 100vw;
-    height: 100vh;
-    z-index: 999;
+    width: max(100vw, 800px);
+    height: max(100vh, 800px);
+    z-index: 10;
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
+    padding-top: max(20vh, 160px);
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
+}
+
+.popup-background.higherZ {
+    z-index: 100;
+    padding-top: max(40vh, 320px);
 }
 
 .edit-todo-form,

@@ -1,7 +1,7 @@
 export default function Model () {
     let id = 0;
     let projects = [];
-    let todos = [];
+    let todos = new Map();
 
     let isProjNameValid = (name) => {
         if (typeof(name) != 'string') {
@@ -43,12 +43,13 @@ export default function Model () {
         }
     }
 
+    const getCurId = ()=> {
+        return id;
+    }
+
     const getTodoById = (todoId) => {
-        for (let i = 0; i < todos.length; i++) {
-            if (todos[i].getId() == todoId) {
-                return todos[i];
-            }
-        }
+        todoId = parseInt(todoId);
+        if (todos.has(todoId)) return todos.get(todoId);
         return null;
     }
 
@@ -63,7 +64,7 @@ export default function Model () {
         let [ans, message] = canAddTodo(todoOptions, todoOptions.project);
         if (ans) {
             let todo = TodoItem(id, todoOptions.name, todoOptions.description, todoOptions.dueDate, todoOptions.priority, todoOptions.project);
-            todos.push(todo);
+            todos.set(id, todo);
             id++;
             return [ans, id-1];
         }
@@ -71,13 +72,10 @@ export default function Model () {
     }
 
     const removeTodoById = (todoId) => {
-        let i = 0;
-        while (i < todos.length) {
-            if (todoId == todos[i].getId()){
-                todos.splice(i, 1);
-                return true;
-            }
-            i++;
+        todoId = parseInt(todoId);
+        if (todos.has(todoId)) {
+            todos.delete(todoId);
+            return true;
         }
         return false;
     }
@@ -90,6 +88,7 @@ export default function Model () {
     }
 
     const editTodoById = (options, todoId) => {
+        todoId = parseInt(todoId);
         let [ans, message] = canEditTodoById(options, todoId);
         if (ans) {
             let todo = getTodoById(todoId);
@@ -97,6 +96,11 @@ export default function Model () {
             todo.setDueDate(options.dueDate);
             todo.setDescription(options.description);
             todo.setPriority(options.priority);
+            if (options.complete == true) {
+                todo.setAsComplete();
+            } else if (options.complete == false) {
+                todo.setAsIncomplete();
+            }
         }
         return [ans, message];
     }
@@ -111,6 +115,22 @@ export default function Model () {
             project: todo.getProject(),
             complete: todo.getComplete(),
         };
+    }
+
+    const outputTodoSepcStrById = (todoId) => {
+        return todoSpecStr(getTodoById(todoId));
+    };
+
+    const todoSpecStr = (todo) => {
+        let spec = [];
+        let items = [];
+        let info = todoInfo(todo);
+        let temp = [info.id, info.name, info.description, info.dueDate, info.priority, info.project, info.complete];
+        for (let i = 0; i < temp.length; i++) {
+            spec.push(temp[i].toString().length);
+            items.push(temp[i].toString());
+        }
+        return [spec.join(','), items.join('')];
     }
 
     const toggleCompleteTodoById = (todoId) => {
@@ -128,16 +148,44 @@ export default function Model () {
 
     const outputTodoInfosFor = (projName) => {
         let tds = [];
-        for (let i = 0; i < todos.length; i++) {
-            if (projName == null || todos[i].getProject() == projName) {
-                tds.push(todoInfo(todos[i]));
+        for (let todo of todos.values()) {
+            if (projName == '' || todo.getProject() == projName) {
+                tds.push(todoInfo(todo));
             }
         }
         return tds;        
     }
 
+    const initializeModel = (curId, indices, specs, strs) => {
+        if (!curId || !indices || indices.length != specs.length || specs.length != strs.length) {
+            todos.clear();
+            id = 0;
+            return;
+        }
+        todos.clear();
+        let keys = ['id', 'name', 'description', 'dueDate', 'priority', 'project', 'complete'];
+        id = parseInt(curId);
+        for (let i = 0; i < indices.length; i++) {
+            let index = parseInt(indices[i]);
+            let spec = specs[i].split(',');
+            let str = strs[i];
+            let options = {};
+            let startIndex = 0;
+            for (let j = 0; j < spec.length; j++) {
+                let len = parseInt(spec[j]);
+                options[keys[j]] = str.substring(startIndex, startIndex + len);
+                startIndex += len;
+            }
+            let todo = TodoItem(options.id, options.name, options.description, options.dueDate, options.priority, options.project);
+            if (options.complete == 'true') {
+                todo.setAsComplete();
+            }
+            todos.set(index, todo);
+        }
+    }
 
     return {
+        getCurId,
         canAddProject,
         addProject,
         removeProject,
@@ -149,6 +197,8 @@ export default function Model () {
         toggleCompleteTodoById,
         outputTodoInfosFor,
         outputTodoInfoById,
+        outputTodoSepcStrById,
+        initializeModel,
     };
 };
 
