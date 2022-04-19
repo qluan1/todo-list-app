@@ -458,3 +458,155 @@ function editButtonClicked(detail, todo, todoDiv, app) {
         });
     }
 }
+
+export function getAddProjectForm(app) {
+    let background = document.createElement('div');
+    background.classList.add('popup-background');
+
+    let form = document.createElement('div');
+    background.appendChild(form);
+    form.classList.add('add-project-form');
+
+    let projNameContainer = document.createElement('div');
+    form.appendChild(projNameContainer);
+
+    let projNameInput = document.createElement('input');
+    projNameContainer.appendChild(projNameInput);
+    projNameInput.setAttribute('type', 'text');
+
+    let buttonContainer = document.createElement('div');
+    form.appendChild(buttonContainer);
+    buttonContainer.classList.add('add-project-buttons');
+
+    let addButton = document.createElement('input');
+    buttonContainer.appendChild(addButton);
+    addButton.setAttribute('type', 'button');
+    addButton.setAttribute('value', 'Add Project');
+
+    let cancelButton = document.createElement('input');
+    buttonContainer.appendChild(cancelButton);
+    cancelButton.setAttribute('type', 'button');
+    cancelButton.setAttribute('value', 'Cancel');
+
+    let message = document.createElement('div');
+    form.appendChild(message);
+    message.classList.add('add-project-message');
+
+    addButton.addEventListener('click', () => {
+        let [success, m] = app.addProject(projNameInput.value);
+        if (success) {
+            document.body.classList.remove('no-scroll');
+            document.body.removeChild(background);
+            return;
+        }
+        message.textContent = errorMessage;
+    });
+
+    cancelButton.addEventListener('click', () => {
+        document.body.classList.remove('no-scroll');
+        document.body.removeChild(background);
+    });
+
+    background.addEventListener('click', (e) => {
+        if (e.target == background) {
+            document.body.classList.remove('no-scroll');
+            document.body.removeChild(background);           
+        }
+    });
+
+    return background;
+}
+
+export function getRemoveProjectConfirmation(proj, app) {
+    let background = document.createElement('div');
+    background.classList.add('popup-background');
+
+    let confirmationPage = document.createElement('div');
+    background.appendChild(confirmationPage);
+    confirmationPage.classList.add('confirmation-page');
+
+    let head = document.createElement('h3');
+    confirmationPage.appendChild(head);
+    head.innerHTML = `Remove project <br> <div class = "confirmation-page-header-innertext">${proj}</div> and tasks belong to it?`;
+
+    let buttonBox = document.createElement('div');
+    confirmationPage.appendChild(buttonBox);
+    buttonBox.classList.add('confirmation-page-button-box');
+    
+    let confirm = document.createElement('input');
+    buttonBox.appendChild(confirm);
+    confirm.setAttribute('type', 'button');
+    confirm.setAttribute('value', 'confirm');
+    confirm.addEventListener('click', () => {
+        app.removeProject(proj);
+        document.body.removeChild(background);
+        document.body.classList.remove('no-scroll');
+    });
+
+    let cancel = document.createElement('input');
+    buttonBox.appendChild(cancel);
+    cancel.setAttribute('type', 'button');
+    cancel.setAttribute('value', 'cancel');
+    cancel.addEventListener('click', () => {
+        document.body.removeChild(background);
+        document.body.classList.remove('no-scroll');
+    });
+
+    background.addEventListener('click', (e) => {
+        if (e.target == background) {
+            document.body.classList.remove('no-scroll');
+            document.body.removeChild(background);           
+        }
+    });
+
+    return background;
+}
+
+export function getRemoveTodoConfirmation(todo, div, app) {
+    let container = document.createElement('div');
+    container.classList.add('popup-background');
+
+    let confirmationPage = document.createElement('div');
+    container.appendChild(confirmationPage);
+    confirmationPage.classList.add('confirmation-page');
+
+    let head = document.createElement('h3');
+    confirmationPage.appendChild(head);
+    head.innerHTML = `Remove <span>${todo.name}</span>?`;
+
+    let buttonBox = document.createElement('div');
+    confirmationPage.appendChild(buttonBox);
+    buttonBox.classList.add('confirmation-page-button-box');
+    
+    let confirm = document.createElement('input');
+    buttonBox.appendChild(confirm);
+    confirm.setAttribute('type', 'button');
+    confirm.setAttribute('value', 'confirm');
+    confirm.addEventListener('click', () => {
+        let a = app.removeTodo(todo.id);
+        if (!a) {
+            console.log('This item is not found.');
+        }
+        div.parentNode.removeChild(div);
+        document.body.removeChild(container);
+        document.body.classList.remove('no-scroll');
+    });
+
+    let cancel = document.createElement('input');
+    buttonBox.appendChild(cancel);
+    cancel.setAttribute('type', 'button');
+    cancel.setAttribute('value', 'cancel');
+    cancel.addEventListener('click', () => {
+        document.body.removeChild(container);
+        document.body.classList.remove('no-scroll');
+    });
+
+    container.addEventListener('click', (e) => {
+        if (e.target == container) {
+            document.body.removeChild(container);
+            document.body.classList.remove('no-scroll');
+        }
+    })
+
+    return container;
+}

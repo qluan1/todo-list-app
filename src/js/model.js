@@ -1,9 +1,9 @@
 export default function Model () {
     let id = 0;
-    let projects = [];
+    let projects = new Map();
     let todos = new Map();
 
-    let isProjNameValid = (name) => {
+    const isProjNameValid = (name) => {
         if (typeof(name) != 'string') {
             return false;
         }
@@ -11,37 +11,38 @@ export default function Model () {
         return pn != '';
     };
 
-    let canAddProject = (projName) => {
+    const canAddProject = (projName) => {
         if (!isProjNameValid(projName)) {
             return [false, 'Project Name Invalid!'];
         }
         let pn = projName.trim();
-        for (let i = 0; i < projects.length; i++) {
-            if (pn === projects[i]) {
-                return [false, 'This Project Already Exists!'];
-            }
+        if (projects.has(pn)) {
+            return [false, 'Project Already Exists!'];
         }
-        return [true, null];
+        return [true, pn];
     };
 
-    let addProject = (projName) => {
+    const addProject = (projName) => {
         let [canAdd, message] = canAddProject(projName);
-        if (!canAdd) {
-            return;
+        if (canAdd) {
+            projects.set(projName.trim(), []);
         }
-        projects.push(projName.trim());
+        return [canAdd, message];
     };
 
-    let removeProject = (proj) => {
-        let i = 0;
-        while (i < projects.length) {
-            if (projects[i] == proj){
-                projects.splice(i, 1);
-                return;
-            }
-            i++;
+    const removeProject = (proj) => {
+        let removedId = [];
+        for (let todo of projects.get(proj)) {
+            removedId.push(todo.getId());
+            removeTodoById(todo.getId());
         }
+        projects.delete(proj);
+        return removedId;
     }
+
+    const getProjectsList = () => {
+        return projects.keys();
+    };
 
     const getCurId = ()=> {
         return id;
@@ -65,6 +66,13 @@ export default function Model () {
         if (ans) {
             let todo = TodoItem(id, todoOptions.name, todoOptions.description, todoOptions.dueDate, todoOptions.priority, todoOptions.project);
             todos.set(id, todo);
+            if (todo.getProject() != '') {
+                if (projects.has(todo.getProject())) {
+                    projects.get(todo.getProject()).push(todo);
+                } else {
+                    projects.set(todo.getProject(), [todo]);
+                }
+            }
             id++;
             return [ans, id-1];
         }
@@ -117,6 +125,16 @@ export default function Model () {
         };
     }
 
+    const outputProjectSpecStr = () => {
+        let spec = [];
+        let str = '';
+        for (let proj of projects.keys()) {
+            spec.push(proj.length.toString());
+            str = str + proj;
+        }
+        return [spec.join(','), str];
+    }
+
     const outputTodoSepcStrById = (todoId) => {
         return todoSpecStr(getTodoById(todoId));
     };
@@ -156,13 +174,21 @@ export default function Model () {
         return tds;        
     }
 
-    const initializeModel = (curId, indices, specs, strs) => {
+    const initializeModel = (curId, indices, specs, strs, projSpecs, projStr) => {
+        todos.clear();
+        projects.clear();
+        id = 0;
         if (!curId || !indices || indices.length != specs.length || specs.length != strs.length) {
-            todos.clear();
-            id = 0;
             return;
         }
-        todos.clear();
+
+        let startIndex = 0;
+        for (let lstring of projSpecs.split(',')) {
+            let l = parseInt(lstring);
+            let proj = projStr.substring(startIndex, startIndex + l);
+            startIndex += l;
+            addProject(proj);
+        }
         let keys = ['id', 'name', 'description', 'dueDate', 'priority', 'project', 'complete'];
         id = parseInt(curId);
         for (let i = 0; i < indices.length; i++) {
@@ -181,6 +207,14 @@ export default function Model () {
                 todo.setAsComplete();
             }
             todos.set(index, todo);
+            
+            if (todo.getProject() != '') {
+                if (projects.has(todo.getProject())) {
+                    projects.get(todo.getProject()).push(todo);
+                } else {
+                    projects.set(todo.getProject(), [todo]);
+                }   
+            }
         }
     }
 
@@ -189,6 +223,7 @@ export default function Model () {
         canAddProject,
         addProject,
         removeProject,
+        getProjectsList,
         canAddTodo,
         addTodo,
         removeTodoById,
@@ -198,6 +233,7 @@ export default function Model () {
         outputTodoInfosFor,
         outputTodoInfoById,
         outputTodoSepcStrById,
+        outputProjectSpecStr,
         initializeModel,
     };
 };

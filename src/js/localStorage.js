@@ -55,6 +55,34 @@ export function removeEntry(curId, index) {
     storage.removeItem(index.toString()+'str');
 }
 
+export function saveProjects(projSpec, projStr) {
+    let storage = window.localStorage;
+    storage['projSpec'] = projSpec;
+    storage['projStr'] = projStr;
+}
+
+export function storageRemoveProject(proj) {
+    let storage = window.localStorage;
+    let projSpec = storage['projSpec'];
+    let projStr = storage['projStr'];
+    if (!projSpec) return;
+    let projects = [];
+    let newSpec = [];
+    let spec = projSpec.split(',');
+    let startIndex = 0;
+    for (let s of spec) {
+        let len = parseInt(s);
+        let p = projStr.substring(startIndex, startIndex+len);
+        startIndex += len;
+        if (p != proj) {
+            projects.push(p);
+            newSpec.push(p.length.toString());
+        }
+    }
+    saveProjects(newSpec.join(','), projects.join(''));
+}
+
+
 export function loadEntries() {
     let storage = window.localStorage;
     let curId = storage['curId'];
@@ -68,6 +96,48 @@ export function loadEntries() {
             strs.push(storage[index+'str']);
         }
     }
-    return [curId, indices, specs, strs];
+
+    let projSpec = storage['projSpec'];
+    if (!projSpec) projSpec = '';
+    let projStr = storage['projStr'];
+    if (!projStr) projStr = '';
+
+    return [curId, indices, specs, strs, projSpec, projStr];
 }
 
+export function integrityTest() {
+    // test the integrity of projects
+    let storage = window.localStorage;
+    let projSpec = storage['projSpec'];
+    if (!projSpec) projSpec = '';
+    let projStr = storage['projStr'];
+    if (!projStr) projStr = '';
+
+    if (projSpec == '' && projStr != ''){
+        return 'Error in Projects';
+    }
+
+    if (projSpec != '') {
+        projSpec = projSpec.split(',');
+        let totalLen = projSpec.reduce((partial, a) => partial+parseInt(a), 0);
+        if (totalLen == NaN || totalLen != projStr.length) return 'Error in Projects';
+    }
+
+    // test the integrity of each todo item
+    let indices = storage['indices'];
+    if (indices) {
+        indices = indices.split(',');
+        for (let index of indices) {
+            let spec = storage[index+'spec'];
+            let str = storage[index+'str'];
+            if (!spec || !str) {
+                return `Error in Item of index ${index}!`;
+            }
+            let passed = spec.split(',').reduce((partial, a) => partial+parseInt(a), 0) == str.length;
+            if (!passed) {
+                return `Error in Item of index ${index}!`;
+            }
+        }
+    }
+    return 'Successfully Passed Integrity Test!';    
+}

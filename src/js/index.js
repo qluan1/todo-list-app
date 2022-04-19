@@ -1,10 +1,9 @@
 import '../style.css';
 import Model from './model';
 import initializePage from './initializePage';
-import {showProjects, showTodosFor, appendTodoElement, replaceTodoDiv} from './showContent';
-import {storageAvailable, modifyEntry, removeEntry, loadEntries} from './localStorage.js';
+import {showTodosFor, appendTodoElement, replaceTodoDiv, loadProjects} from './showContent';
+import {storageAvailable, modifyEntry, removeEntry, loadEntries, saveProjects, integrityTest, storageRemoveProject} from './localStorage.js';
 
-initializePage();
 const model = Model();
 
 let app = (function (){
@@ -40,17 +39,45 @@ let app = (function (){
         return [success, message];
     };
 
+    const addProject = (projName) => {
+        let [success, message] = model.addProject(projName);
+        if (success) {
+            saveProjects(...model.outputProjectSpecStr());
+            updateProjects();
+            showTodosForProject(message);
+        }
+        return [success, message];
+    };
+
     const toggleCompleteTodo = (todoId) => {
         model.toggleCompleteTodoById(todoId);
         let [spec, str] = model.outputTodoSepcStrById(todoId);
         modifyEntry(model.getCurId(), todoId, spec, str);        
-    }
+    };
+
+    const updateProjects = () => {
+        loadProjects(model.getProjectsList(), app);
+    };
 
     const updateTodoDiv = (todoId, div) => {
         replaceTodoDiv(getTodoById(todoId), div, app);
     }
     const showTodosForProject = (projName) => {
         showTodosFor(model.outputTodoInfosFor(projName), projName, app);
+    };
+
+    const removeProject = (projName) => {
+        let removedTodoId = model.removeProject(projName);
+        for (let todoId of removedTodoId) {
+            removeEntry(model.getCurId(), todoId);
+        }
+        storageRemoveProject(projName);
+        updateProjects();
+        let allTask = document.querySelector('.all-tasks');
+        showTodosForProject('');
+        let temp = document.getElementById('sidebar').querySelector('.selected');
+        if (temp) temp.classList.remove('selected');
+        allTask.classList.add('selected');
     };
 
     const getStoredEntries = () => {
@@ -62,17 +89,39 @@ let app = (function (){
         addTodo,
         removeTodo,
         editTodo,
+        addProject,
+        removeProject,
         toggleCompleteTodo,
         showTodosForProject,
         updateTodoDiv,
         getStoredEntries,
         test : () => {   
+            initializePage();
+            let projButton = document.querySelector('.projects');
+            projButton.addEventListener('click', ()=>{
+                let projsList = document.querySelector('.sidebar-projects-list');
+                projsList.classList.toggle('hidden');
+                projButton.classList.toggle('folded');
+            });
+
+            let allTask = document.querySelector('.all-tasks');
+            allTask.addEventListener('click', ()=>{
+                showTodosForProject('');
+                let temp = document.getElementById('sidebar').querySelector('.selected');
+                if (temp) temp.classList.remove('selected');
+                allTask.classList.add('selected');
+            });
+
             if (storageAvailable('localStorage')) {
+                console.log(integrityTest());
                 getStoredEntries();
                 showTodosForProject('');
+                updateProjects();
             } else {
                 showTodosForProject('');
+                updateProjects();
             }
+
             let log = document.createElement('input');
             log.setAttribute('type', 'button');
             log.setAttribute('value', 'log');
@@ -83,7 +132,7 @@ let app = (function (){
                 console.log(specs);
                 console.log(strs);
             })
-            document.body.appendChild(log);
+            //document.body.appendChild(log);
 
             let clear = document.createElement('input');
             clear.setAttribute('type', 'button');
@@ -93,10 +142,9 @@ let app = (function (){
                 getStoredEntries();
                 showTodosForProject('');
             });
-            document.body.appendChild(clear);
+            //document.body.appendChild(clear);
         },
     };
 })();
 
 app.test();
-

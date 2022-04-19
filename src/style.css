@@ -17,41 +17,168 @@ body.no-scroll {
 }
 
 #header {
-    background-color: #659DBD;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    background-color: rgba(102, 158, 189, 0.8);
     color: white;
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
+    height: 100px;
 }
 
 #header:hover {
     color: #DAAD86;
 }
 
-#main {
-    min-width: 800px;
-    min-height: 800px;
-    height: 100%;
-    width: 100%;
+#header h1 {
+    cursor: pointer;
 }
+
+#main {
+    padding-top: 100px;
+    padding-left: 200px;
+    padding-bottom: 300px;
+}
+
+
+#project-title {
+    display: inline-block;
+    font-size: larger;
+    white-space: nowrap;
+    overflow: hidden;
+    font-weight: 600;
+    padding-top: 50px;
+    max-width: 65%;
+    text-overflow: ellipsis;
+}
+
+#project-title::before {
+    content: 'Showing tasks for:';
+    color: grey;
+    padding-left: 50px;
+    padding-right: 20px;
+    font-size: large;
+}
+
+
+/***
+            CSS for SIDEBAR
+***/
+
+#sidebar {
+    box-sizing: border-box;
+    position: fixed;
+    top: 100px;
+    left: 0px;
+    width: 200px;
+    height: calc(100vh - 50px);
+    background-color: rgb(250, 250, 250);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 50px;
+    align-items: start;
+}
+
+.sidebar-button {
+    box-sizing: border-box;
+    width: 100%;
+    cursor: pointer;
+    background-color: rgb(250, 250, 250);
+    border: none;
+    font-size: large;
+    padding: 0 20px 0 20px;
+}
+
+.sidebar-button:hover {
+    color: #DAAD86;
+}
+
+.sidebar-button.current {
+    background-color: rgb(245, 245, 245);
+}
+
+.sidebar-button.projects.folded::after {
+    content: '▼';
+    font-size: x-small;
+    color: black;
+    padding-left: 20px;
+}
+
+.sidebar-button.projects:after {
+    content: '▲';
+    font-size: x-small;
+    color: black;
+    padding-left: 20px;
+}
+
+.sidebar-projects-list {
+    padding: 0px;
+    width: 160px;
+    margin: 10px 20px;
+    background-color: rgb(255, 255, 255);
+    border: 1px solid grey;
+    min-height: 300px;
+    max-height: 500px;
+    overflow: auto;
+}
+
+.sidebar-projects-list.hidden {
+    visibility: hidden;
+}
+
+.sidebar-projects-item {
+    width: 100%;
+    cursor:pointer;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.sidebar-add-project:hover,
+.sidebar-projects-item:hover {
+    color: #DAAD86;
+}
+
+.sidebar-projects-item::before {
+    content: '·';
+    padding: 0px 5px;
+}
+
+.sidebar-add-project {
+    padding-left: 5px;
+    color: #659DBD;
+    cursor: pointer;
+}
+
+.sidebar-projects-item.selected,
+.sidebar-button.selected {
+    background-color: #FBEEC1;
+}
+
 
 
 
 #todos-list {
+    position:relative;
     display: flex;
     flex-direction: column;
     row-gap: 20px;
-    height: 100%;
-    width: auto;
-    padding: 40px 20%;
+    box-sizing: border-box;
+    width: 80%;
+    padding-top: 40px;
+    padding-left: 20%;
 }
 
 .todo-container {
-    cursor:pointer;
     display: grid;
     font-family: sans-serif;
     max-width: 600px;
+    min-width: 200px;
+    width: 80%;
     grid-template-columns: 40px 1fr 30px;
     grid-template-rows: 20px 20px;
     column-gap: 20px;
@@ -60,18 +187,32 @@ body.no-scroll {
     border-bottom: 1px solid #f0f0f0;
 }
 
-
-.todo-container:last-child {
-    display: block;
-    border-bottom: none;
+.delete-project-button {
+    cursor:pointer;
+    position: absolute;
+    top: -38px;
+    right: -60px;
+    border: 2px solid red;
+    border-radius: 5px;
+    font-family: sans-serif;
+    padding: 10px;
+    transition: 0.4s;
 }
+
+.delete-project-button:hover {
+    background-color: red;
+    color:white;
+    transition: 0.4s;
+}
+
 
 
 /*** 
     CSS for ADD TODO FORM
 ***/
 .add-container {
-    padding-top: 10px;
+    font-family: sans-serif;
+    padding-left: 10px;
     cursor: pointer;
     display: flex;
     justify-content: start;
@@ -256,11 +397,11 @@ body.no-scroll {
 
 .todo-complete {
     grid-column: 1;
-    grid-row: 1/ span 2; 
+    grid-row: 1/ span 1; 
     place-self: center;
-    height: 30px;
-    width: 30px;
-    border-radius: 20px;
+    height: 16px;
+    width: 16px;
+    border-radius: 11px;
     cursor: pointer;
     display: flex;
     justify-content: center;
@@ -269,7 +410,7 @@ body.no-scroll {
 
 .todo-complete div {
     visibility: hidden;
-    font-size: 30px;
+    font-size: 20px;
 }
 
 .todo-complete div.completed {
@@ -277,18 +418,19 @@ body.no-scroll {
 }
 
 .todo-complete.no-priority {
-    border: 5px solid grey;
+    border: 3px solid grey;
 }
 
 .todo-complete.low-priority {
-    border: 5px solid #006fe3;
+    border: 3px solid #006fe3;
 }
 
 .todo-complete.high-priority {
-    border: 5px solid #ff0d3a;
+    border: 3px solid #ff0d3a;
 }
 
 .todo-name {
+    cursor:pointer;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -296,6 +438,10 @@ body.no-scroll {
     font-weight: 600;
     grid-column: 2;
     grid-row: 1;
+}
+
+.todo-name:hover {
+    color: #DAAD86;
 }
 
 .strike-through {
@@ -435,6 +581,7 @@ input.todo-detail-title:focus {
 
 .edit-todo-form,
 .confirmation-page {
+    max-width: 60vw;
     border-radius: 5px;
     background-color: white;
     display: flex;
@@ -450,13 +597,16 @@ input.todo-detail-title:focus {
     align-items: stretch;
 }
 
-.confirmation-page div {
+.confirmation-page-button-box {
     margin: 0 auto;
     display: flex;
     justify-content: center;
     column-gap: 40px;
+    overflow: auto;
 }
 
-.confirmation-page h3 span {
+.confirmation-page-header-innertext {
     color: #659DBD;
+    width: 100%;
+    overflow-x: scroll;
 }
